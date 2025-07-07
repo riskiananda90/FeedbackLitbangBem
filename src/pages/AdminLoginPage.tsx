@@ -47,21 +47,14 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-96 h-96 bg-gradient-to-br from-blue-300/20 to-purple-300/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-1/2 -right-1/2 w-96 h-96 bg-gradient-to-br from-indigo-300/20 to-pink-300/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-gradient-to-br from-yellow-200/30 to-orange-200/30 rounded-full blur-2xl"></div>
-      </div>
-
-      <Card className="w-full max-w-md relative z-10 backdrop-blur-lg bg-white/80 shadow-2xl border border-white/20">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-lg border border-gray-200">
         <CardHeader className="space-y-4 text-center pb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="mx-auto w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold text-gray-900">
               Admin Portal
             </CardTitle>
             <p className="text-gray-600 mt-2">Masuk ke dashboard admin BEM</p>
@@ -82,7 +75,7 @@ const AdminLoginPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="h-12 px-4 bg-white/70 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
+                className="h-12 px-4 bg-white border-gray-200 focus:border-gray-400 transition-all duration-200"
               />
             </div>
             
@@ -99,7 +92,7 @@ const AdminLoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="h-12 px-4 pr-12 bg-white/70 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
+                  className="h-12 px-4 pr-12 bg-white border-gray-200 focus:border-gray-400 transition-all duration-200"
                 />
                 <button
                   type="button"
@@ -115,7 +108,7 @@ const AdminLoginPage = () => {
           <Button 
             onClick={handleLogin} 
             disabled={loading || !username || !password}
-            className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <div className="flex items-center gap-3">

@@ -45,14 +45,14 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
     ? feedback.feedback.substring(0, 120) + '...' 
     : feedback.feedback;
 
-  const getAvatarGradient = (name: string) => {
+  const getAvatarColor = (name: string) => {
     const colors = [
-      'from-pink-400 to-purple-600',
-      'from-blue-400 to-indigo-600',
-      'from-green-400 to-emerald-600',
-      'from-yellow-400 to-orange-600',
-      'from-red-400 to-pink-600',
-      'from-indigo-400 to-purple-600',
+      'bg-slate-700',
+      'bg-gray-700', 
+      'bg-zinc-700',
+      'bg-neutral-700',
+      'bg-stone-700',
+      'bg-blue-700',
     ];
     const index = name.length % colors.length;
     return colors[index];
@@ -125,57 +125,64 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
   return (
     <>
       <Card 
-        className="backdrop-blur-lg transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 animate-fade-in bg-white/50 border-gray-200 hover:bg-white/70"
-        style={{ animationDelay: `${animationDelay}ms` }}
+        className="bg-white border border-gray-100 rounded-lg overflow-hidden"
       >
-        <CardContent className="p-3 sm:p-4 lg:p-6">
-          <div className="flex items-start gap-2 sm:gap-3 lg:gap-4">
-            <Avatar className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border border-white shadow-lg flex-shrink-0">
-              <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(feedback.name)} text-white font-bold text-xs sm:text-sm`}>
-                {getInitials(feedback.name)}
-              </AvatarFallback>
-            </Avatar>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-3 sm:gap-4 lg:gap-5">
+            <div className="relative">
+              <Avatar className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 border border-gray-200 flex-shrink-0">
+                <AvatarFallback className={`${getAvatarColor(feedback.name)} text-white font-medium text-sm sm:text-base`}>
+                  {getInitials(feedback.name)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                  <h3 className="font-semibold text-sm sm:text-base truncate text-gray-800">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <h3 className="font-medium text-base sm:text-lg truncate text-gray-900">
                     {feedback.name}
                   </h3>
-                  <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
+                    feedback.category === 'appreciation' ? 'bg-green-50 text-green-700' :
+                    feedback.category === 'metodologi' ? 'bg-blue-50 text-blue-700' :
+                    feedback.category === 'technical' ? 'bg-purple-50 text-purple-700' :
+                    'bg-gray-50 text-gray-700'
+                  }`}>
                     {getCategoryIcon(feedback.category)}
                     <span className="capitalize hidden sm:inline">{feedback.category}</span>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${getSentimentColor(feedback.sentiment)}`}></div>
-                  <Button variant="ghost" size="sm" className="p-0.5 sm:p-1 h-auto">
-                    <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                </div>
               </div>
 
-              <div className="flex items-center gap-1 mb-2 sm:mb-3 text-xs sm:text-sm text-gray-500">
-                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                <span>
-                  {formatDistanceToNow(feedback.timestamp, { 
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 text-sm text-gray-500">
+                <Clock className="w-4 h-4 text-gray-800" />
+                <span className="font-medium">
+                  {formatDistanceToNow(new Date(feedback.timestamp), { 
                     addSuffix: true, 
                     locale: id 
                   })}
                 </span>
+                {/* Recent indicator */}
+                {(Date.now() - new Date(feedback.timestamp).getTime()) < 24 * 60 * 60 * 1000 && (
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                    Baru
+                  </span>
+                )}
               </div>
 
-              <p className="mb-2 sm:mb-3 lg:mb-4 leading-relaxed text-sm sm:text-base text-gray-700">
-                {displayText}
-              </p>
+              <div className="relative">
+                <p className="mb-3 sm:mb-4 lg:mb-5 leading-relaxed text-sm sm:text-base text-gray-700">
+                  {displayText}
+                </p>
+              </div>
 
               {shouldTruncate && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="p-0 h-auto mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm text-blue-500 hover:text-blue-600 hover:bg-gray-100"
+                  className="p-0 h-auto mb-3 sm:mb-4 lg:mb-5 text-sm font-semibold text-gray-700 hover:text-gray-800 bg-gray-200 rounded-lg px-2 py-1 transition-all duration-200"
                 >
                   {isExpanded ? 'Tampilkan lebih sedikit' : 'Baca selengkapnya'}
                 </Button>
@@ -189,47 +196,44 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
                       size="sm"
                       onClick={handleLike}
                       disabled={isLiking || hasLiked}
-                      className={`flex items-center gap-1 sm:gap-2 transition-all duration-200 hover:scale-105 p-1 sm:p-2 h-auto text-xs sm:text-sm ${
+                      className={`flex items-center gap-2 p-2 text-sm rounded ${
                         hasLiked 
-                          ? 'text-red-500 hover:text-red-600' 
-                          : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
-                      } ${isLiking ? 'animate-bounce' : ''}`}
+                          ? 'text-red-600 bg-red-50' 
+                          : 'text-gray-600 hover:text-red-600 hover:bg-gray-50'
+                      }`}
                     >
-                      <div className="relative">
-                        <Heart 
-                          className={`w-3 h-3 sm:w-4 sm:h-4 transition-all duration-200 ${
-                            hasLiked ? 'fill-current scale-110' : ''
-                          } ${isLiking ? 'animate-pulse' : ''}`} 
-                        />
-                        
-                        <div 
-                          id={`hearts-${feedback.id}`}
-                          className="absolute inset-0 pointer-events-none"
-                        ></div>
-                      </div>
-                      
-                      <span className={`font-medium transition-all duration-200 text-xs sm:text-sm ${
-                        isLiking ? 'animate-pulse' : ''
-                      }`}>
+                      <Heart 
+                        className={`w-4 h-4 ${hasLiked ? 'fill-current' : ''}`} 
+                      />
+                      <span className="font-medium">
                         {localLikes}
                       </span>
                     </Button>
 
                     {localLikes > 0 && localLikes % 10 === 0 && (
-                      <div className="absolute -top-1 -right-1 text-xs">
+                      <div className="absolute -top-2 -right-2 text-lg animate-bounce">
                         🎉
                       </div>
                     )}
                   </div>
                 </div>
 
-                {feedback.likes > 20 && (
-                  <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-orange-400 to-red-500 text-white text-xs font-medium">
-                    <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    <span className="hidden sm:inline">Trending</span>
-                    <span className="sm:hidden">🔥</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  {feedback.likes > 20 && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded bg-orange-50 text-orange-700 text-xs font-medium">
+                      <Flame className="w-3 h-3" />
+                      <span className="hidden sm:inline">Trending</span>
+                      <span className="sm:hidden">🔥</span>
+                    </div>
+                  )}
+                  
+                  {feedback.sentiment === 'positive' && feedback.likes > 15 && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded bg-green-50 text-green-700 text-xs font-medium">
+                      <Star className="w-3 h-3" />
+                      <span className="hidden sm:inline">Top</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

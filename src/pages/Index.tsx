@@ -1,83 +1,73 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { FeedbackForm } from '@/components/FeedbackForm';
 import { FeedbackCard } from '@/components/FeedbackCard';
 import { StatsDashboard } from '@/components/StatsDashboard';
 import { FilterControls } from '@/components/FilterControls';
 import { Header } from '@/components/Header';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { supabase } from '@/integrations/supabase/client';
 import { Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Sample data with Indonesian context
-const initialFeedbacks = [
-  {
-    id: 1,
-    name: "Dr. Sarah Andini",
-    feedback: "Metodologi penelitian yang digunakan sudah sangat baik, namun perlu ditambahkan analisis statistik yang lebih mendalam untuk memperkuat validitas data. Saran saya adalah menggunakan multiple regression analysis untuk hasil yang lebih komprehensif.",
-    likes: 24,
-    timestamp: new Date(Date.now() - 1000 * 60 * 45),
-    category: "metodologi",
-    sentiment: "constructive",
-    likedBy: []
-  },
-  {
-    id: 2,
-    name: "Ahmad Rizky Pratama",
-    feedback: "Artikel ini memberikan insight baru tentang inovasi teknologi di kampus. Sangat aplikatif dan bisa diimplementasikan langsung. Terima kasih untuk tim litbang BEM!",
-    likes: 18,
-    timestamp: new Date(Date.now() - 1000 * 60 * 120),
-    category: "appreciation",
-    sentiment: "positive",
-    likedBy: []
-  },
-  {
-    id: 3,
-    name: "Fitri Maharani",
-    feedback: "Bagian literature review perlu diperkuat dengan referensi terbaru. Beberapa sumber yang digunakan sudah outdated. Mungkin bisa ditambahkan jurnal internasional dari 2023-2024.",
-    likes: 15,
-    timestamp: new Date(Date.now() - 1000 * 60 * 180),
-    category: "literature",
-    sentiment: "constructive",
-    likedBy: []
-  },
-  {
-    id: 4,
-    name: "Budi Santoso",
-    feedback: "Implementasi hasil penelitian ini sangat menarik! Saya tertarik untuk berkolaborasi dalam pengembangan lebih lanjut. Bisa dibuatkan roadmap implementasinya?",
-    likes: 32,
-    timestamp: new Date(Date.now() - 1000 * 60 * 240),
-    category: "collaboration",
-    sentiment: "positive",
-    likedBy: []
-  },
-  {
-    id: 5,
-    name: "Maya Sari Dewi",
-    feedback: "Grafik dan visualisasi data kurang informatif. Mungkin bisa menggunakan chart yang lebih interaktif atau infografis yang lebih menarik untuk memudahkan pembaca memahami hasil penelitian.",
-    likes: 12,
-    timestamp: new Date(Date.now() - 1000 * 60 * 300),
-    category: "visualization",
-    sentiment: "constructive",
-    likedBy: []
-  },
-  {
-    id: 6,
-    name: "Rian Firmansyah",
-    feedback: "Luar biasa sekali! Penelitian ini memberikan solusi konkret untuk masalah yang selama ini dihadapi mahasiswa. Semoga bisa segera diimplementasikan di seluruh fakultas.",
-    likes: 28,
-    timestamp: new Date(Date.now() - 1000 * 60 * 360),
-    category: "appreciation",
-    sentiment: "positive",
-    likedBy: []
-  }
-];
+interface Feedback {
+  id: string;
+  name: string;
+  feedback: string;
+  likes: number;
+  timestamp: Date;
+  category: string;
+  sentiment: string;
+  likedBy: string[];
+}
 
 const Index = () => {
-  const [feedbacks, setFeedbacks] = useLocalStorage('feedbacks', initialFeedbacks);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useLocalStorage('currentUser', '');
   const [filterType, setFilterType] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch feedbacks from database
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching feedbacks:', error);
+          return;
+        }
+
+        const formattedFeedbacks: Feedback[] = data.map(fb => ({
+          id: fb.id,
+          name: fb.name,
+          feedback: fb.feedback,
+          likes: fb.likes,
+          timestamp: new Date(fb.created_at),
+          category: fb.category || 'general',
+          sentiment: fb.sentiment || 'neutral',
+          likedBy: fb.liked_by || []
+        }));
+
+        setFeedbacks(formattedFeedbacks);
+      } catch (error) {
+        console.error('Error fetching feedbacks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeedbacks();
+  }, []);
   
+  // Check if user has submitted feedback
+  const hasUserSubmittedFeedback = useMemo(() => {
+    return currentUser.trim() !== '' && feedbacks.some(feedback => feedback.name === currentUser);
+  }, [currentUser, feedbacks]);
+
   // Filter and sort feedbacks
   const filteredFeedbacks = useMemo(() => {
     let filtered = feedbacks.filter(feedback => {
@@ -109,60 +99,122 @@ const Index = () => {
   }, [feedbacks, filterType, searchQuery]);
 
   // Handle new feedback submission
-  const handleNewFeedback = useCallback((newFeedback) => {
-    const feedbackWithId = {
-      ...newFeedback,
-      id: Date.now(),
-      likes: 0,
-      timestamp: new Date(),
-      category: 'general',
-      sentiment: 'neutral',
-      likedBy: []
-    };
-    
-    setFeedbacks(prev => [feedbackWithId, ...prev]);
-    setCurrentUser(newFeedback.name);
-    
-    toast.success("Feedback berhasil dikirim! 🎉", {
-      description: "Terima kasih atas kontribusi Anda untuk litbang BEM",
-      duration: 5000,
-    });
-  }, [setFeedbacks, setCurrentUser]);
+  const handleNewFeedback = useCallback(async (newFeedback) => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .insert({
+          name: newFeedback.name,
+          feedback: newFeedback.feedback,
+          likes: 0,
+          category: 'general',
+          sentiment: 'neutral',
+          liked_by: []
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error inserting feedback:', error);
+        toast.error("Gagal mengirim feedback. Silakan coba lagi.");
+        return;
+      }
+
+      const formattedFeedback: Feedback = {
+        id: data.id,
+        name: data.name,
+        feedback: data.feedback,
+        likes: data.likes,
+        timestamp: new Date(data.created_at),
+        category: data.category || 'general',
+        sentiment: data.sentiment || 'neutral',
+        likedBy: data.liked_by || []
+      };
+
+      setFeedbacks(prev => [formattedFeedback, ...prev]);
+      setCurrentUser(newFeedback.name);
+      
+      toast.success("Feedback berhasil dikirim! 🎉", {
+        description: "Terima kasih atas kontribusi Anda untuk litbang BEM",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast.error("Gagal mengirim feedback. Silakan coba lagi.");
+    }
+  }, [setCurrentUser]);
 
   // Handle like with animations
-  const handleLike = useCallback((feedbackId, userName) => {
-    setFeedbacks(prev => prev.map(feedback => {
-      if (feedback.id === feedbackId) {
-        const alreadyLiked = feedback.likedBy?.includes(userName);
-        
-        if (alreadyLiked) {
-          toast.error("Anda sudah menyukai feedback ini! ❤️");
-          return feedback;
-        }
-
-        const newLikes = feedback.likes + 1;
-        const updatedFeedback = {
-          ...feedback,
-          likes: newLikes,
-          likedBy: [...(feedback.likedBy || []), userName]
-        };
-
-        // Milestone notifications
-        if (newLikes === 10 || newLikes === 25 || newLikes === 50) {
-          toast.success(`🎉 Milestone ${newLikes} likes tercapai!`, {
-            description: "Feedback ini semakin populer!",
-            duration: 4000,
-          });
-        }
-
-        return updatedFeedback;
+  const handleLike = useCallback(async (feedbackId: string, userName: string) => {
+    try {
+      // Check if already liked
+      const currentFeedback = feedbacks.find(f => f.id === feedbackId);
+      if (currentFeedback?.likedBy?.includes(userName)) {
+        toast.error("Anda sudah menyukai feedback ini! ❤️");
+        return;
       }
-      return feedback;
-    }));
-  }, [setFeedbacks]);
+
+      const newLikes = (currentFeedback?.likes || 0) + 1;
+      const newLikedBy = [...(currentFeedback?.likedBy || []), userName];
+
+      const { error } = await supabase
+        .from('feedback')
+        .update({
+          likes: newLikes,
+          liked_by: newLikedBy
+        })
+        .eq('id', feedbackId);
+
+      if (error) {
+        console.error('Error updating likes:', error);
+        toast.error("Gagal memberikan like. Silakan coba lagi.");
+        return;
+      }
+
+      setFeedbacks(prev => prev.map(feedback => {
+        if (feedback.id === feedbackId) {
+          const updatedFeedback = {
+            ...feedback,
+            likes: newLikes,
+            likedBy: newLikedBy
+          };
+
+          // Milestone notifications
+          if (newLikes === 10 || newLikes === 25 || newLikes === 50) {
+            toast.success(`🎉 Milestone ${newLikes} likes tercapai!`, {
+              description: "Feedback ini semakin populer!",
+              duration: 4000,
+            });
+          }
+
+          return updatedFeedback;
+        }
+        return feedback;
+      }));
+    } catch (error) {
+      console.error('Error liking feedback:', error);
+      toast.error("Gagal memberikan like. Silakan coba lagi.");
+    }
+  }, [feedbacks]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Memuat feedback...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-white">
       <Header />
 
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
@@ -206,6 +258,7 @@ const Index = () => {
                   onLike={handleLike}
                   currentUser={currentUser}
                   animationDelay={index * 100}
+                  hasUserSubmittedFeedback={hasUserSubmittedFeedback}
                 />
               ))}
             </div>

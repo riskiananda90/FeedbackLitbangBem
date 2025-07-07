@@ -44,10 +44,10 @@ export const ContextualFeedbackForm: React.FC<ContextualFeedbackFormProps> = ({
   const isValid = name.trim() && feedback.trim() && feedback.trim().length >= 10;
 
   return (
-    <Card className="backdrop-blur-lg bg-white/50 border-gray-200 transition-all duration-300 hover:shadow-lg">
+    <Card className="bg-white border border-gray-200">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-blue-500" />
+        <CardTitle className="text-lg font-medium text-gray-900 flex items-center gap-2">
+          <MessageSquare className="w-5 h-5 text-gray-600" />
           Berikan Feedback
         </CardTitle>
       </CardHeader>
@@ -65,7 +65,7 @@ export const ContextualFeedbackForm: React.FC<ContextualFeedbackFormProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Masukkan nama lengkap Anda"
-              className="bg-white transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+              className="bg-white border-gray-200"
               required
             />
           </div>
@@ -81,7 +81,7 @@ export const ContextualFeedbackForm: React.FC<ContextualFeedbackFormProps> = ({
               onChange={(e) => setFeedback(e.target.value)}
               placeholder={`Berikan feedback Anda tentang "${article.title}". Minimal 10 karakter.`}
               rows={4}
-              className="bg-white resize-none transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+              className="bg-white border-gray-200 resize-none"
               required
               minLength={10}
             />
@@ -93,7 +93,7 @@ export const ContextualFeedbackForm: React.FC<ContextualFeedbackFormProps> = ({
           <Button
             type="submit"
             disabled={!isValid || isSubmitting}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center gap-2">

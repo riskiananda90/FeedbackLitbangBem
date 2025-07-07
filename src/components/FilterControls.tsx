@@ -29,7 +29,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
     all: feedbacks.length,
     top5: Math.min(5, feedbacks.length),
     popular: feedbacks.filter(f => f.likes > 15).length,
-    recent: feedbacks.filter(f => Date.now() - f.timestamp.getTime() < 24 * 60 * 60 * 1000).length,
+    recent: feedbacks.filter(f => Date.now() - new Date(f.timestamp).getTime() < 24 * 60 * 60 * 1000).length,
     trending: feedbacks.filter(f => f.likes > 20).length,
   };
 
@@ -45,7 +45,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
   const CurrentIcon = currentFilter.icon;
 
   return (
-    <Card className="backdrop-blur-lg bg-white/50 border-gray-200 transition-all duration-300">
+    <Card className="bg-white border border-gray-200">
       <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
         {/* Search Bar */}
         <div className="relative">
@@ -55,7 +55,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             placeholder="Cari feedback..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-8 sm:pl-10 text-sm sm:text-base h-8 sm:h-10 bg-white transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            className="pl-8 sm:pl-10 text-sm sm:text-base h-8 sm:h-10 bg-white border-gray-200"
           />
         </div>
 
@@ -71,7 +71,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-between p-2 sm:p-3 h-auto text-xs sm:text-sm bg-white hover:bg-gray-50 text-gray-700"
+                className="w-full justify-between p-2 sm:p-3 h-auto text-xs sm:text-sm bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
               >
                 <div className="flex items-center gap-1 sm:gap-2">
                   <CurrentIcon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -98,7 +98,7 @@ export const FilterControls: React.FC<FilterControlsProps> = ({
                     onClick={() => onFilterChange(filter.key)}
                     className={`flex items-center justify-between cursor-pointer ${
                       isActive 
-                        ? 'bg-blue-500 text-white' 
+                        ? 'bg-gray-900 text-white' 
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >

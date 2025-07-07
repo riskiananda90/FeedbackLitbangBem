@@ -4,7 +4,7 @@ import { Heart, MessageSquare, TrendingUp, Users, Award, Clock } from 'lucide-re
 
 interface StatsDashboardProps {
   feedbacks: Array<{
-    id: number;
+    id: string; // Changed from number to string
     name: string;
     feedback: string;
     likes: number;
